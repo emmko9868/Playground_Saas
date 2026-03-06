@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dark Luxury Dashboard</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --bg: #000000;
+    --card: #0A0A0A;
+    --border: #2A2520;
+    --cream: #E8DCC8;
+    --cream-dim: #B8AE9C;
+    --mint: #4ECDC4;
+    --mint-dim: rgba(78, 205, 196, 0.15);
+    --radius: 16px;
+  }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--cream);
+    min-height: 100vh;
+    padding: 20px;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .dashboard {
+    max-width: 1280px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  /* ── Top Nav ── */
+  .top-nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 4px;
+    gap: 16px;
+  }
+
+  .nav-left {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .moon-icon {
+    width: 36px;
+    height: 36px;
+    border: 1.5px solid var(--border);
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    cursor: pointer;
+    transition: border-color 0.2s;
+  }
+  .moon-icon:hover { border-color: var(--cream-dim); }
+  .moon-icon svg { width: 16px; height: 16px; }
+
+  .search-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--card);
+    border: 1.5px solid var(--border);
+    border-radius: 24px;
+    padding: 8px 18px;
+    min-width: 220px;
+  }
+  .search-bar svg { width: 14px; height: 14px; opacity: 0.5; }
+  .search-bar input {
+    background: none;
+    border: none;
+    outline: none;
+    color: var(--cream-dim);
+    font-family: inherit;
+    font-size: 13px;
+    width: 100%;
+  }
+  .search-bar input::placeholder { color: var(--cream-dim); opacity: 0.6; }
+
+  .nav-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .nav-icon {
+    width: 36px;
+    height: 36px;
+    border: 1.5px solid var(--border);
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    cursor: pointer;
+    position: relative;
+    transition: border-color 0.2s;
+  }
+  .nav-icon:hover { border-color: var(--cream-dim); }
+  .nav-icon svg { width: 16px; height: 16px; }
+
+  .nav-badge {
+    position: absolute;
+    top: -2px;
+    right: -2px;
+    width: 8px;
+    height: 8px;
+    background: var(--mint);
+    border-radius: 50%;
+    border: 2px solid var(--bg);
+  }
+
+  .avatar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    padding-left: 8px;
+    border-left: 1.5px solid var(--border);
+  }
+  .avatar-img {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--mint), #2d9f97);
+    display: grid;
+    place-items: center;
+    font-size: 13px;
+    font-weight: 600;
+    color: #000;
+  }
+  .avatar-name {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--cream);
+  }
+
+  /* ── Cards ── */
+  .card {
+    background: var(--card);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px;
+  }
+
+  /* ── Stats Row ── */
+  .stats-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+  }
+
+  .stat-card {
+    position: relative;
+  }
+
+  .stat-card .stat-icon {
+    width: 32px;
+    height: 32px;
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    display: grid;
+    place-items: center;
+    margin-bottom: 14px;
+  }
+  .stat-card .stat-icon svg { width: 16px; height: 16px; }
+
+  .stat-label {
+    font-size: 12px;
+    color: var(--cream-dim);
+    margin-bottom: 8px;
+    font-weight: 400;
+  }
+
+  .stat-value {
+    font-size: 36px;
+    font-weight: 700;
+    letter-spacing: -1px;
+    line-height: 1;
+    margin-bottom: 10px;
+  }
+
+  .stat-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11px;
+    font-weight: 500;
+    padding: 3px 10px;
+    border-radius: 20px;
+    background: var(--mint-dim);
+    color: var(--mint);
+  }
+
+  .stat-mini-chart {
+    position: absolute;
+    right: 16px;
+    bottom: 16px;
+    width: 40px;
+    height: 40px;
+  }
+
+  /* ── Middle Row ── */
+  .middle-row {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr;
+    gap: 16px;
+  }
+
+  .card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 18px;
+  }
+
+  .card-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--cream);
+  }
+
+  .card-dropdown {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 12px;
+    color: var(--cream-dim);
+    background: none;
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    padding: 4px 12px;
+    cursor: pointer;
+    font-family: inherit;
+    transition: border-color 0.2s;
+  }
+  .card-dropdown:hover { border-color: var(--cream-dim); }
+
+  .chart-container {
+    position: relative;
+    width: 100%;
+    height: 200px;
+  }
+
+  /* ── Pie Chart Section ── */
+  .pie-section .card-header {
+    margin-bottom: 8px;
+  }
+
+  .toggle-group {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+  }
+  .toggle-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 11px;
+    color: var(--cream-dim);
+    cursor: pointer;
+  }
+  .toggle-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+  }
+
+  .rings-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 32px;
+    padding: 16px 0 8px;
+  }
+
+  .ring-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .ring-wrapper {
+    position: relative;
+    width: 100px;
+    height: 100px;
+  }
+
+  .ring-wrapper canvas {
+    width: 100% !important;
+    height: 100% !important;
+  }
+
+  .ring-label {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--cream);
+  }
+
+  .ring-text {
+    font-size: 11px;
+    color: var(--cream-dim);
+    text-align: center;
+  }
+
+  /* ── Bottom Row ── */
+  .bottom-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+
+  .btn-report {
+    font-family: inherit;
+    font-size: 11px;
+    font-weight: 500;
+    padding: 5px 14px;
+    border-radius: 8px;
+    border: 1.5px solid var(--mint);
+    background: var(--mint-dim);
+    color: var(--mint);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    transition: background 0.2s;
+  }
+  .btn-report:hover { background: rgba(78, 205, 196, 0.25); }
+  .btn-report svg { width: 12px; height: 12px; }
+
+  /* ── Responsive ── */
+  @media (max-width: 1024px) {
+    .stats-row { grid-template-columns: repeat(2, 1fr); }
+    .middle-row { grid-template-columns: 1fr; }
+    .bottom-row { grid-template-columns: 1fr; }
+  }
+
+  @media (max-width: 640px) {
+    body { padding: 12px; }
+    .stats-row { grid-template-columns: 1fr; }
+    .search-bar { min-width: 140px; }
+    .rings-container { gap: 16px; }
+    .ring-wrapper { width: 80px; height: 80px; }
+    .stat-value { font-size: 28px; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { transition: none !important; animation: none !important; }
+  }
+</style>
+</head>
+<body>
+<div class="dashboard">
+
+  <!-- Top Nav -->
+  <nav class="top-nav">
+    <div class="nav-left">
+      <div class="moon-icon">
+        <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3a7 7 0 0 0 9.79 9.79z"/></svg>
+      </div>
+      <div class="search-bar">
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        <input type="text" placeholder="Search" aria-label="Search">
+      </div>
+    </div>
+    <div class="nav-right">
+      <div class="nav-icon">
+        <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+        <span class="nav-badge"></span>
+      </div>
+      <div class="nav-icon">
+        <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+      </div>
+      <div class="nav-icon">
+        <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      </div>
+      <div class="avatar">
+        <div class="avatar-img">S</div>
+        <span class="avatar-name">Sadie</span>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Stats Row -->
+  <div class="stats-row">
+    <div class="card stat-card">
+      <div class="stat-icon">
+        <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8m-4-4v4"/></svg>
+      </div>
+      <div class="stat-label">Total Order</div>
+      <div class="stat-value">67</div>
+      <span class="stat-badge">
+        <svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/></svg>
+        11.52 down
+      </span>
+      <canvas class="stat-mini-chart" id="mini1"></canvas>
+    </div>
+    <div class="card stat-card">
+      <div class="stat-icon">
+        <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+      </div>
+      <div class="stat-label">Total Delivered</div>
+      <div class="stat-value">53</div>
+      <span class="stat-badge">
+        <svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/></svg>
+        11.52 down
+      </span>
+      <canvas class="stat-mini-chart" id="mini2"></canvas>
+    </div>
+    <div class="card stat-card">
+      <div class="stat-icon">
+        <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="m15 9-6 6m0-6 6 6"/></svg>
+      </div>
+      <div class="stat-label">Total Cancelled</div>
+      <div class="stat-value">14</div>
+      <span class="stat-badge">
+        <svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/></svg>
+        11.52 down
+      </span>
+      <canvas class="stat-mini-chart" id="mini3"></canvas>
+    </div>
+    <div class="card stat-card">
+      <div class="stat-icon">
+        <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+      </div>
+      <div class="stat-label">Total Revenue</div>
+      <div class="stat-value">$972</div>
+      <span class="stat-badge">
+        <svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/></svg>
+        11.52 down
+      </span>
+      <canvas class="stat-mini-chart" id="mini4"></canvas>
+    </div>
+  </div>
+
+  <!-- Middle Row -->
+  <div class="middle-row">
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">Total Revenue</span>
+        <button class="card-dropdown">2024 <svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></button>
+      </div>
+      <div class="chart-container">
+        <canvas id="revenueChart"></canvas>
+      </div>
+    </div>
+    <div class="card pie-section">
+      <div class="card-header">
+        <span class="card-title">Pie Chart</span>
+        <div class="toggle-group">
+          <label class="toggle-item"><span class="toggle-dot" style="background:var(--mint)"></span> Show Value</label>
+          <label class="toggle-item"><span class="toggle-dot" style="background:var(--cream-dim)"></span> Chart</label>
+        </div>
+      </div>
+      <div class="rings-container">
+        <div class="ring-item">
+          <div class="ring-wrapper">
+            <canvas id="ring1"></canvas>
+            <span class="ring-label">76%</span>
+          </div>
+          <span class="ring-text">Total Order</span>
+        </div>
+        <div class="ring-item">
+          <div class="ring-wrapper">
+            <canvas id="ring2"></canvas>
+            <span class="ring-label">18%</span>
+          </div>
+          <span class="ring-text">Customer Growth</span>
+        </div>
+        <div class="ring-item">
+          <div class="ring-wrapper">
+            <canvas id="ring3"></canvas>
+            <span class="ring-label">53%</span>
+          </div>
+          <span class="ring-text">Total Revenue</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bottom Row -->
+  <div class="bottom-row">
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">Chart Order</span>
+        <button class="btn-report">
+          See Report
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+        </button>
+      </div>
+      <div class="chart-container">
+        <canvas id="orderChart"></canvas>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">Customer map</span>
+        <button class="card-dropdown">Weekly <svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></button>
+      </div>
+      <div class="chart-container">
+        <canvas id="customerChart"></canvas>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const CREAM = '#E8DCC8';
+const CREAM_DIM = '#B8AE9C';
+const MINT = '#4ECDC4';
+const BORDER = '#2A2520';
+const CARD_BG = '#0A0A0A';
+
+Chart.defaults.color = CREAM_DIM;
+Chart.defaults.borderColor = 'rgba(42,37,32,0.5)';
+Chart.defaults.font.family = "'DM Sans', sans-serif";
+Chart.defaults.font.size = 11;
+Chart.defaults.plugins.legend.display = false;
+Chart.defaults.plugins.tooltip.backgroundColor = '#1A1814';
+Chart.defaults.plugins.tooltip.titleColor = CREAM;
+Chart.defaults.plugins.tooltip.bodyColor = CREAM_DIM;
+Chart.defaults.plugins.tooltip.borderColor = BORDER;
+Chart.defaults.plugins.tooltip.borderWidth = 1;
+Chart.defaults.plugins.tooltip.cornerRadius = 8;
+Chart.defaults.plugins.tooltip.padding = 10;
+
+/* ── Mini Donut Charts (stat cards) ── */
+function createMiniDonut(id, value) {
+  const ctx = document.getElementById(id);
+  new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      datasets: [{
+        data: [value, 100 - value],
+        backgroundColor: [MINT, 'rgba(42,37,32,0.4)'],
+        borderWidth: 0
+      }]
+    },
+    options: {
+      cutout: '70%',
+      responsive: false,
+      plugins: { tooltip: { enabled: false } },
+      events: []
+    }
+  });
+}
+createMiniDonut('mini1', 67);
+createMiniDonut('mini2', 78);
+createMiniDonut('mini3', 35);
+createMiniDonut('mini4', 85);
+
+/* ── Total Revenue Bar Chart ── */
+const revenueLabels = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const revenueData = [25, 35, 28, 45, 30, 50, 40, 55, 35, 45, 38, 42];
+
+new Chart(document.getElementById('revenueChart'), {
+  type: 'bar',
+  data: {
+    labels: revenueLabels,
+    datasets: [{
+      data: revenueData,
+      backgroundColor: revenueData.map((_, i) => i === 5 ? MINT : 'rgba(232,220,200,0.15)'),
+      borderRadius: 6,
+      borderSkipped: false,
+      barPercentage: 0.5,
+      categoryPercentage: 0.7
+    }]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    scales: {
+      x: {
+        grid: { display: false },
+        ticks: { color: CREAM_DIM, font: { size: 10 } },
+        border: { display: false }
+      },
+      y: {
+        grid: { color: 'rgba(42,37,32,0.3)' },
+        ticks: { display: false },
+        border: { display: false }
+      }
+    },
+    plugins: {
+      tooltip: {
+        callbacks: {
+          label: ctx => `$${ctx.parsed.y}K`
+        }
+      }
+    }
+  }
+});
+
+/* ── Circular Progress Rings ── */
+function createRing(id, value) {
+  new Chart(document.getElementById(id), {
+    type: 'doughnut',
+    data: {
+      datasets: [{
+        data: [value, 100 - value],
+        backgroundColor: [MINT, 'rgba(42,37,32,0.4)'],
+        borderWidth: 0
+      }]
+    },
+    options: {
+      cutout: '78%',
+      responsive: true,
+      maintainAspectRatio: true,
+      rotation: -90,
+      plugins: { tooltip: { enabled: false } },
+      events: []
+    }
+  });
+}
+createRing('ring1', 76);
+createRing('ring2', 18);
+createRing('ring3', 53);
+
+/* ── Chart Order (Area Chart) ── */
+const orderLabels = ['','','','','','','','','','','','','','','','','','','',''];
+const orderData = [20, 30, 25, 40, 35, 50, 45, 55, 38, 30, 35, 45, 50, 60, 55, 48, 40, 35, 30, 25];
+
+new Chart(document.getElementById('orderChart'), {
+  type: 'line',
+  data: {
+    labels: orderLabels,
+    datasets: [{
+      data: orderData,
+      borderColor: CREAM_DIM,
+      borderWidth: 2,
+      fill: true,
+      backgroundColor: (ctx) => {
+        const gradient = ctx.chart.ctx.createLinearGradient(0, 0, 0, ctx.chart.height);
+        gradient.addColorStop(0, 'rgba(232,220,200,0.2)');
+        gradient.addColorStop(1, 'rgba(232,220,200,0.02)');
+        return gradient;
+      },
+      tension: 0.4,
+      pointRadius: 0,
+      pointHoverRadius: 5,
+      pointHoverBackgroundColor: CREAM,
+      pointHoverBorderColor: CREAM,
+    }]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    scales: {
+      x: { display: false },
+      y: {
+        grid: { color: 'rgba(42,37,32,0.3)' },
+        ticks: { color: CREAM_DIM, font: { size: 10 }, callback: v => v },
+        border: { display: false }
+      }
+    }
+  }
+});
+
+/* ── Customer Map (Bar Chart) ── */
+const customerLabels = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun','Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+const customerData = [45, 30, 55, 40, 65, 50, 35, 60, 40, 70, 55, 45, 35, 50];
+const customerLine = [40, 38, 42, 45, 50, 48, 40, 45, 42, 55, 50, 45, 38, 42];
+
+new Chart(document.getElementById('customerChart'), {
+  type: 'bar',
+  data: {
+    labels: customerLabels,
+    datasets: [
+      {
+        type: 'line',
+        data: customerLine,
+        borderColor: CREAM,
+        borderWidth: 2,
+        tension: 0.4,
+        pointRadius: 0,
+        pointHoverRadius: 4,
+        pointHoverBackgroundColor: CREAM,
+        order: 0
+      },
+      {
+        data: customerData,
+        backgroundColor: MINT,
+        borderRadius: 4,
+        borderSkipped: false,
+        barPercentage: 0.45,
+        categoryPercentage: 0.7,
+        order: 1
+      }
+    ]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    scales: {
+      x: {
+        grid: { display: false },
+        ticks: { color: CREAM_DIM, font: { size: 9 }, maxRotation: 0 },
+        border: { display: false }
+      },
+      y: {
+        grid: { color: 'rgba(42,37,32,0.3)' },
+        ticks: { color: CREAM_DIM, font: { size: 10 } },
+        border: { display: false }
+      }
+    }
+  }
+});
+</script>
+</body>
+</html>
